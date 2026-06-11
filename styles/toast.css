@@ -1,0 +1,91 @@
+/*
+ * core-general · styles/toast.css
+ * Toast de notificación. Usa variables CSS para que cada proyecto
+ * pueda sobreescribir colores sin tocar el componente.
+ *
+ * Variables esperadas (con fallbacks neutros):
+ *   --wc-toast-bg        Fondo del toast
+ *   --wc-toast-border    Color del borde
+ *   --wc-toast-text      Color del texto
+ *   --wc-toast-icon-bg   Fondo del icono (success)
+ *   --wc-toast-icon-error-bg  Fondo del icono (error)
+ */
+
+.web-core-toast {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: 1px solid var(--wc-toast-border, rgba(0, 0, 0, 0.12));
+  border-radius: 16px;
+  background: var(--wc-toast-bg, #fff);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(16px);
+  color: var(--wc-toast-text, #111);
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease, transform 280ms ease;
+}
+
+.web-core-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.web-core-toast__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--wc-toast-icon-bg, #16a34a);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.web-core-toast[data-type='error'] .web-core-toast__icon {
+  background: var(--wc-toast-icon-error-bg, #dc2626);
+}
+
+.web-core-toast__message {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .web-core-toast {
+    top: auto;
+    bottom: 28px;
+    left: 16px;
+    right: 16px;
+    transform: translateY(16px);
+    white-space: normal;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 20px;
+    border-radius: 20px;
+    font-size: 1.05rem;
+    gap: 14px;
+  }
+
+  .web-core-toast--visible {
+    transform: translateY(0);
+  }
+
+  .web-core-toast__icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+}
