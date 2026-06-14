@@ -10,6 +10,7 @@ El foco de esta primera versión es lo que mejor encaja con un producto transver
 - helpers SEO para páginas de servicios
 - plantilla editable de OG image para landings de negocio
 - navbar base para empresas y servicios
+- helpers de intake y cuestionarios repetibles con Supabase + Resend
 - utilidades pequeñas de texto y arrays
 
 ## Qué migré de `core`
@@ -35,6 +36,9 @@ src/
   content/
     blog.js
     service-pages.js
+  intake/
+    form.js
+    questionnaire.js
   seo/
     og-image.js
     share.js
@@ -100,6 +104,51 @@ mountNavbar("#site-header", {
 });
 ```
 
+## Intake reutilizable
+
+`core-general` ya incluye dos niveles de intake:
+
+- `submitIntake`: formulario simple orientado a leads/clientes
+- `submitQuestionnaire`: cuestionarios multipaso con payload estructurado y adjuntos
+- `submitClientForm`: alias de negocio para formularios de clientes reutilizables
+
+Ejemplo rápido:
+
+```js
+import { submitQuestionnaire } from "web-core/intake/questionnaire";
+
+const result = await submitQuestionnaire(
+  {
+    endpoint: "/api/questionnaire",
+    projectSlug: "saulo",
+    formType: "technical-questionnaire",
+    fieldMap: {
+      brandName: "appProjectName",
+      logoFile: "logoFile"
+    },
+    multiValueFields: ["routineVariables"]
+  },
+  document.querySelector("#questionnaire-form")
+);
+
+if (!result.ok) {
+  console.error(result.error);
+}
+```
+
+Si quieres tratarlo como pieza de negocio transversal en vez de como
+“questionnaire”, puedes usar el alias:
+
+```js
+import { submitClientForm } from "web-core/intake/client-form";
+```
+
+La idea es repetir siempre el mismo patrón:
+
+1. frontend normaliza respuestas
+2. backend del proyecto guarda en Supabase
+3. Resend notifica al equipo o manda resumen
+
 ## API principal
 
 - `createSeoMetadata`
@@ -121,6 +170,15 @@ mountNavbar("#site-header", {
 - `createServicePageMetadata`
 - `createServicePageSeoBundle`
 - `createServiceOgImageHtml`
+- `submitIntake`
+- `initIntakeForm`
+- `isSpam`
+- `buildClientFormSubmission`
+- `submitClientForm`
+- `flattenClientFormAnswers`
+- `buildQuestionnaireSubmission`
+- `submitQuestionnaire`
+- `flattenQuestionnaireAnswers`
 - `getDefaultNavbarLinks`
 - `createNavbarMarkup`
 - `mountNavbar`
