@@ -8,6 +8,9 @@
     ".": "./src/index.js",
     "./content/blog": "./src/content/blog.js",
     "./content/service-pages": "./src/content/service-pages.js",
+    "./intake/client-form": "./src/intake/client-form.js",
+    "./intake/form": "./src/intake/form.js",
+    "./intake/questionnaire": "./src/intake/questionnaire.js",
     "./seo/og-image": "./src/seo/og-image.js",
     "./seo/share": "./src/seo/share.js",
     "./seo/structured-data": "./src/seo/structured-data.js",
@@ -17,9 +20,37 @@
     "./utils/text": "./src/utils/text.js"
   },
   "scripts": {
-    "check": "node --input-type=module -e \"import('./src/index.js').then(() => console.log('web-core ok'))\""
+    "check": "node --input-type=module -e \"import('./src/index.js').then(() => console.log('web-core ok'))\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "security:setup": "node scripts/install-gitleaks.mjs",
+    "secrets:scan": ".tools/gitleaks/current/gitleaks git --redact --no-banner .",
+    "secrets:scan:staged": ".tools/gitleaks/current/gitleaks git --staged --redact --no-banner .",
+    "audit:deps": "audit-ci --config ./audit-ci.jsonc",
+    "commitlint": "commitlint --from HEAD~1 --to HEAD"
   },
   "engines": {
     "node": ">=20"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{css,json,md}": "prettier --write"
+  },
+  "devDependencies": {
+    "eslint": "^9.29.0",
+    "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.4",
+    "@eslint/js": "^9.29.0",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "audit-ci": "^7.1.0"
   }
 }
