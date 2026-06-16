@@ -2,10 +2,9 @@ import { createSeoMetadata } from "../seo/share.js";
 import {
   createBlogPostingSchema,
   createBreadcrumbSchema,
-  createWebSiteSchema
+  createWebSiteSchema,
 } from "../seo/structured-data.js";
 import { createExcerpt, normalizeText, slugify } from "../utils/text.js";
-import { toArray } from "../utils/array.js";
 
 function joinUrl(baseUrl, path = "") {
   if (!normalizeText(baseUrl)) {
@@ -15,12 +14,6 @@ function joinUrl(baseUrl, path = "") {
   return new URL(path || "", baseUrl).toString();
 }
 
-function normalizeKeywords(keywords) {
-  return toArray(keywords)
-    .map((item) => normalizeText(item))
-    .filter(Boolean);
-}
-
 function createBlogIndexMetadata(config = {}) {
   const siteUrl = normalizeText(config.siteUrl);
   const path = normalizeText(config.path || "/blog/");
@@ -28,7 +21,7 @@ function createBlogIndexMetadata(config = {}) {
   const title = normalizeText(config.title || "Blog");
   const description = createExcerpt(
     config.description || "Articles, guides, and updates.",
-    config.descriptionLength || 160
+    config.descriptionLength || 160,
   );
 
   return createSeoMetadata({
@@ -39,7 +32,7 @@ function createBlogIndexMetadata(config = {}) {
     imageUrl: config.imageUrl,
     siteName: config.siteName,
     appName: config.siteName,
-    ogType: "website"
+    ogType: "website",
   });
 }
 
@@ -50,11 +43,9 @@ function createBlogPostMetadata(config = {}) {
   const canonicalUrl = joinUrl(siteUrl, path);
   const description = createExcerpt(
     config.description || config.excerpt || config.summary || "",
-    config.descriptionLength || 160
+    config.descriptionLength || 160,
   );
   const title = normalizeText(config.title);
-  const section = normalizeText(config.section || config.category);
-  const keywords = normalizeKeywords(config.keywords || config.tags);
 
   return createSeoMetadata({
     baseUrl: canonicalUrl,
@@ -66,7 +57,7 @@ function createBlogPostMetadata(config = {}) {
     siteName: config.siteName,
     appName: config.siteName,
     ogType: "article",
-    twitterCard: config.twitterCard
+    twitterCard: config.twitterCard,
   });
 }
 
@@ -76,14 +67,14 @@ function createBlogPostSeoBundle(config = {}) {
   const canonicalUrl = joinUrl(siteUrl, path);
   const metadata = createBlogPostMetadata({
     ...config,
-    path
+    path,
   });
   const websiteSchema = createWebSiteSchema({
     name: config.siteName,
     url: siteUrl,
     description: config.siteDescription,
     language: config.language,
-    publisher: config.publisher
+    publisher: config.publisher,
   });
   const blogPostingSchema = createBlogPostingSchema({
     baseUrl: siteUrl,
@@ -96,25 +87,25 @@ function createBlogPostSeoBundle(config = {}) {
     authors: config.authors || config.author,
     publisher: config.publisher,
     keywords: config.keywords || config.tags,
-    section: config.section || config.category
+    section: config.section || config.category,
   });
   const breadcrumbs = createBreadcrumbSchema(
     [
       { name: config.homeLabel || "Home", path: "/" },
       { name: config.blogLabel || "Blog", path: "/blog/" },
-      { name: config.title, path }
+      { name: config.title, path },
     ],
-    { baseUrl: siteUrl }
+    { baseUrl: siteUrl },
   );
 
   return {
     metadata,
-    schemas: [websiteSchema, blogPostingSchema, breadcrumbs]
+    schemas: [websiteSchema, blogPostingSchema, breadcrumbs],
   };
 }
 
 export {
   createBlogIndexMetadata,
   createBlogPostMetadata,
-  createBlogPostSeoBundle
+  createBlogPostSeoBundle,
 };

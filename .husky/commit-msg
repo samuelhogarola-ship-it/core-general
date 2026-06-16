@@ -1,0 +1,3 @@
+#!/bin/sh
+set -eu
+npx commitlint --edit "$1"
