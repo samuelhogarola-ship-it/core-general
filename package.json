@@ -17,7 +17,9 @@
     "./styles/navbar.css": "./styles/navbar.css",
     "./ui/navbar": "./src/ui/navbar.js",
     "./utils/array": "./src/utils/array.js",
-    "./utils/text": "./src/utils/text.js"
+    "./utils/text": "./src/utils/text.js",
+    "./ui/toast": "./src/ui/toast.js",
+    "./styles/toast.css": "./styles/toast.css"
   },
   "scripts": {
     "check": "node --input-type=module -e \"import('./src/index.js').then(() => console.log('web-core ok'))\"",
@@ -30,7 +32,8 @@
     "secrets:scan": ".tools/gitleaks/current/gitleaks git --redact --no-banner .",
     "secrets:scan:staged": ".tools/gitleaks/current/gitleaks git --staged --redact --no-banner .",
     "audit:deps": "audit-ci --config ./audit-ci.jsonc",
-    "commitlint": "commitlint --from HEAD~1 --to HEAD"
+    "commitlint": "commitlint --from HEAD~1 --to HEAD",
+    "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=20"
