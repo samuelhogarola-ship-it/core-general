@@ -17,7 +17,7 @@
  * @param {string} [data.email]
  * @param {string} [data.phone]
  * @param {object} [data.extra]  - Campos adicionales → van a intake.data
- * @returns {Promise<{ok: boolean, id?: string, error?: string}>}
+ * @returns {Promise<{ok: boolean, error?: string}>}
  */
 export async function submitIntake(config, data) {
   const { name, email, phone, extra = {} } = data;
@@ -31,39 +31,33 @@ export async function submitIntake(config, data) {
   }
 
   const payload = {
-    tenant_id:  config.tenant_id,
-    form_type:  config.form_type,
+    tenant_id: config.tenant_id,
+    form_type: config.form_type,
     name,
-    email:      email || null,
-    phone:      phone || null,
-    data:       extra,
-    source:     window?.location?.pathname || null,
-    user_agent: navigator?.userAgent || null,
+    email: email || null,
+    phone: phone || null,
+    data: extra,
+    source: globalThis.window?.location?.pathname || null,
+    user_agent: globalThis.navigator?.userAgent || null,
   };
 
   try {
-    const res = await fetch(
-      `${config.supabase_url}/rest/v1/intake`,
-      {
-        method:  "POST",
-        headers: {
-          "apikey":        config.supabase_publishable_key,
-          "Authorization": `Bearer ${config.supabase_publishable_key}`,
-          "Content-Type":  "application/json",
-          "Prefer":        "return=representation",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const res = await fetch(`${config.supabase_url}/rest/v1/intake`, {
+      method: "POST",
+      headers: {
+        apikey: config.supabase_publishable_key,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(payload),
+    });
 
     if (!res.ok) {
       const err = await res.json();
       return { ok: false, error: err?.message || "Error desconocido" };
     }
 
-    const [record] = await res.json();
-    return { ok: true, id: record?.id };
-
+    return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
   }
