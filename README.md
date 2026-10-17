@@ -7,6 +7,8 @@ El foco de esta primera versión es lo que mejor encaja con un producto transver
 - SEO metadata y social sharing
 - JSON-LD para `WebSite`, `Organization`, `BreadcrumbList`, `BlogPosting` y `FAQPage`
 - helpers de blog para index y posts
+- Blogger Studio configurable para crear, editar y publicar posts
+- protocolo único de alta para registrar cada web en Panel Studio
 - helpers SEO para páginas de servicios
 - plantilla editable de OG image para landings de negocio
 - navbar base para empresas y servicios
@@ -51,6 +53,16 @@ src/
 styles/
   navbar.css
 ```
+
+## Alta canónica de webs y Blogger
+
+Todas las webs nuevas pasan por [`docs/site-onboarding.md`](docs/site-onboarding.md). El comando acepta rutas absolutas, por lo que funciona independientemente del repositorio o carpeta desde la que se haya creado la web:
+
+```sh
+npm run site:onboard -- --root "/ruta/web" --panel-root "/ruta/wf-studio-panel" --key "mi-web" --name "Mi Web" --domain "mi-web.com" --blogger
+```
+
+El editor reutilizable y su contrato están en [`blogger/README.md`](blogger/README.md). El manifiesto generado nunca contiene secretos.
 
 ## Uso rápido
 

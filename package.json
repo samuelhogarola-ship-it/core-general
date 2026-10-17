@@ -4,8 +4,13 @@
   "type": "module",
   "description": "Reusable SEO, content, and utility helpers for commercial web templates.",
   "main": "src/index.js",
+  "bin": {
+    "web-core-site-onboard": "scripts/site-onboard.mjs"
+  },
   "exports": {
     ".": "./src/index.js",
+    "./blogger/config": "./src/blogger/config.js",
+    "./blogger/content-store": "./src/blogger/content-store.js",
     "./content/blog": "./src/content/blog.js",
     "./content/service-pages": "./src/content/service-pages.js",
     "./intake/client-form": "./src/intake/client-form.js",
@@ -14,6 +19,7 @@
     "./seo/og-image": "./src/seo/og-image.js",
     "./seo/share": "./src/seo/share.js",
     "./seo/structured-data": "./src/seo/structured-data.js",
+    "./sites/registry": "./src/sites/registry.js",
     "./styles/navbar.css": "./styles/navbar.css",
     "./ui/navbar": "./src/ui/navbar.js",
     "./utils/array": "./src/utils/array.js",
@@ -23,6 +29,7 @@
   },
   "scripts": {
     "check": "node --input-type=module -e \"import('./src/index.js').then(() => console.log('web-core ok'))\"",
+    "site:onboard": "node scripts/site-onboard.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
