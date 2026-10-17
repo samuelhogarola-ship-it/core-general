@@ -1,0 +1,26 @@
+[
+  {
+    "schemaVersion": 1,
+    "key": "sportmassage",
+    "name": "Sport Massage Fuengirola",
+    "domain": "sportmassagefuengirola.com",
+    "productionUrl": "https://sportmassagefuengirola.com",
+    "repository": "https://github.com/samuelhogarola-ship-it/sportmassage",
+    "panel": {
+      "key": "sportmassage",
+      "path": "/paneladmin/sportmassage"
+    },
+    "analytics": {
+      "source": "personal",
+      "envSuffix": "SPORTMASSAGE",
+      "legacyDashboard": false
+    },
+    "blogger": {
+      "enabled": true,
+      "url": "https://sportmassagefuengirola.com/admin/blogger/",
+      "apiBase": "/api/posts",
+      "buildEndpoint": "/api/build",
+      "publicPostBase": "/blog/"
+    }
+  }
+]

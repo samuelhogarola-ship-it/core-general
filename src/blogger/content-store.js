@@ -129,7 +129,7 @@ export function normalizePostInput(input, defaults = {}) {
   };
 }
 
-export async function listPosts(rootDir) {
+export async function listPosts(rootDir, defaults = {}) {
   const postsDir = path.join(rootDir, "blog-posts");
   const files = await safeReadDir(postsDir);
   const posts = [];
@@ -148,6 +148,7 @@ export async function listPosts(rootDir) {
           slug,
           meta.image,
           meta.title || slug,
+          defaults,
         );
         return {
           slug,
@@ -164,7 +165,7 @@ export async function listPosts(rootDir) {
           status: meta.status || "draft",
           format: meta.content_format || "markdown",
           isPublished: await fileExists(
-            path.join(rootDir, "f", slug, "index.html"),
+            postHtmlPath(rootDir, slug, defaults),
           ),
           words: body.split(/\s+/).filter(Boolean).length,
           images,
@@ -176,7 +177,7 @@ export async function listPosts(rootDir) {
     posts.push(post);
   }
 
-  for (const legacyPost of await listGeneratedPosts(rootDir)) {
+  for (const legacyPost of await listGeneratedPosts(rootDir, defaults)) {
     if (!seenSlugs.has(legacyPost.slug)) posts.push(legacyPost);
   }
 
@@ -203,7 +204,7 @@ export async function readPost(rootDir, slug, defaults = {}) {
     body,
     format: meta.content_format || "markdown",
     isPublished: await fileExists(
-      path.join(rootDir, "f", meta.slug || slug, "index.html"),
+      postHtmlPath(rootDir, meta.slug || slug, defaults),
     ),
     images: await collectPostImages(
       rootDir,
@@ -234,7 +235,7 @@ export async function savePost(rootDir, currentSlug, input, defaults = {}) {
     : null;
   const occupiedFile = await findPostFileBySlug(rootDir, nextSlug);
   const publishedTargetExists = await fileExists(
-    path.join(rootDir, "f", nextSlug, "index.html"),
+    postHtmlPath(rootDir, nextSlug, defaults),
   );
   if (!currentSlug && (occupiedFile || publishedTargetExists)) {
     throw Object.assign(new Error("Ya existe un post con ese slug."), {
@@ -261,22 +262,22 @@ export async function savePost(rootDir, currentSlug, input, defaults = {}) {
     }
     if (currentSlug !== nextSlug) {
       await renameIfExists(
-        path.join(rootDir, "f", currentSlug),
-        path.join(rootDir, "f", nextSlug),
+        postDirectory(rootDir, currentSlug, defaults),
+        postDirectory(rootDir, nextSlug, defaults),
       );
     }
   }
 
-  await mkdir(path.join(rootDir, "f", nextSlug, "img"), { recursive: true });
+  await mkdir(path.join(postDirectory(rootDir, nextSlug, defaults), "img"), { recursive: true });
   await writeFile(nextPath, serializePostMarkdown(meta, body), "utf8");
   return readPost(rootDir, nextSlug, defaults);
 }
 
-export async function listPostImages(rootDir, slug) {
+export async function listPostImages(rootDir, slug, defaults = {}) {
   assertSafeSlug(slug);
-  const imageDir = path.join(rootDir, "f", slug, "img");
+  const imageDir = path.join(postDirectory(rootDir, slug, defaults), "img");
   const files = await safeReadDir(imageDir);
-  const metadata = await readImageMetadata(rootDir, slug);
+  const metadata = await readImageMetadata(rootDir, slug, defaults);
   const images = [];
 
   for (const file of files.filter((entry) => IMAGE_EXT_RE.test(entry))) {
@@ -284,7 +285,7 @@ export async function listPostImages(rootDir, slug) {
     const fileStat = await stat(filePath);
     images.push({
       file,
-      url: `/f/${slug}/img/${file}`,
+      url: `${publicPostBase(defaults)}${slug}/img/${file}`,
       bytes: fileStat.size,
       alt: metadata[file]?.alt || "",
       description: metadata[file]?.description || "",
@@ -297,13 +298,13 @@ export async function listPostImages(rootDir, slug) {
   return images.sort((a, b) => a.file.localeCompare(b.file));
 }
 
-export async function savePostImage(rootDir, slug, fileName, base64Data) {
+export async function savePostImage(rootDir, slug, fileName, base64Data, defaults = {}) {
   assertSafeSlug(slug);
   const safeName = sanitizeImageName(fileName);
   const cleanData = String(base64Data || "").replace(/^data:[^;]+;base64,/, "");
   if (!cleanData) throw new Error("La imagen no contiene datos.");
 
-  const imageDir = path.join(rootDir, "f", slug, "img");
+  const imageDir = path.join(postDirectory(rootDir, slug, defaults), "img");
   await mkdir(imageDir, { recursive: true });
   await writeFile(
     path.join(imageDir, safeName),
@@ -312,24 +313,24 @@ export async function savePostImage(rootDir, slug, fileName, base64Data) {
   await updateImageMetadata(rootDir, slug, safeName, {
     alt: "",
     description: "",
-  });
-  return { file: safeName, url: `/f/${slug}/img/${safeName}` };
+  }, defaults);
+  return { file: safeName, url: `${publicPostBase(defaults)}${slug}/img/${safeName}` };
 }
 
-export async function deletePostImage(rootDir, slug, fileName) {
+export async function deletePostImage(rootDir, slug, fileName, defaults = {}) {
   assertSafeSlug(slug);
   const safeName = sanitizeImageName(fileName);
-  await rm(path.join(rootDir, "f", slug, "img", safeName), { force: true });
-  const metadata = await readImageMetadata(rootDir, slug);
+  await rm(path.join(postDirectory(rootDir, slug, defaults), "img", safeName), { force: true });
+  const metadata = await readImageMetadata(rootDir, slug, defaults);
   delete metadata[safeName];
-  await writeImageMetadata(rootDir, slug, metadata);
+  await writeImageMetadata(rootDir, slug, metadata, defaults);
   return { deleted: safeName };
 }
 
-export async function saveImageMetadata(rootDir, slug, fileName, input) {
+export async function saveImageMetadata(rootDir, slug, fileName, input, defaults = {}) {
   assertSafeSlug(slug);
   const safeName = sanitizeImageName(fileName);
-  const metadata = await readImageMetadata(rootDir, slug);
+  const metadata = await readImageMetadata(rootDir, slug, defaults);
   const next = {
     alt: String(input.alt || "").trim(),
     description: String(input.description || "").trim(),
@@ -343,7 +344,7 @@ export async function saveImageMetadata(rootDir, slug, fileName, input) {
   }
 
   metadata[safeName] = next;
-  await writeImageMetadata(rootDir, slug, metadata);
+  await writeImageMetadata(rootDir, slug, metadata, defaults);
   return { file: safeName, ...next };
 }
 
@@ -366,11 +367,11 @@ async function fileExists(filePath) {
   }
 }
 
-async function readImageMetadata(rootDir, slug) {
+async function readImageMetadata(rootDir, slug, defaults = {}) {
   try {
     return JSON.parse(
       await readFile(
-        path.join(rootDir, "f", slug, "img", IMAGE_META_FILE),
+        path.join(postDirectory(rootDir, slug, defaults), "img", IMAGE_META_FILE),
         "utf8",
       ),
     );
@@ -380,8 +381,8 @@ async function readImageMetadata(rootDir, slug) {
   }
 }
 
-async function writeImageMetadata(rootDir, slug, metadata) {
-  const imageDir = path.join(rootDir, "f", slug, "img");
+async function writeImageMetadata(rootDir, slug, metadata, defaults = {}) {
+  const imageDir = path.join(postDirectory(rootDir, slug, defaults), "img");
   await mkdir(imageDir, { recursive: true });
   await writeFile(
     path.join(imageDir, IMAGE_META_FILE),
@@ -390,10 +391,10 @@ async function writeImageMetadata(rootDir, slug, metadata) {
   );
 }
 
-async function updateImageMetadata(rootDir, slug, fileName, patch) {
-  const metadata = await readImageMetadata(rootDir, slug);
+async function updateImageMetadata(rootDir, slug, fileName, patch, defaults = {}) {
+  const metadata = await readImageMetadata(rootDir, slug, defaults);
   metadata[fileName] = { ...(metadata[fileName] || {}), ...patch };
-  await writeImageMetadata(rootDir, slug, metadata);
+  await writeImageMetadata(rootDir, slug, metadata, defaults);
 }
 
 async function renameIfExists(from, to) {
@@ -424,8 +425,8 @@ async function findPostFileBySlug(rootDir, slug) {
   return null;
 }
 
-async function listGeneratedPosts(rootDir) {
-  const outputDir = path.join(rootDir, "f");
+async function listGeneratedPosts(rootDir, defaults = {}) {
+  const outputDir = postRoot(rootDir, defaults);
   const entries = await safeReadDir(outputDir);
   const posts = [];
 
@@ -439,7 +440,7 @@ async function listGeneratedPosts(rootDir) {
           const meta = extractGeneratedMeta(html, slug);
           return {
             slug,
-            file: "f/" + slug + "/index.html",
+            file: `${publicPostBase(defaults)}${slug}/index.html`,
             source: "generated-html",
             title: meta.title,
             description: meta.description,
@@ -460,6 +461,7 @@ async function listGeneratedPosts(rootDir) {
               slug,
               meta.image,
               meta.title,
+              defaults,
             ),
           };
         } catch (error) {
@@ -475,13 +477,13 @@ async function listGeneratedPosts(rootDir) {
 
 async function readGeneratedPost(rootDir, slug, defaults = {}) {
   const html = await readFile(
-    path.join(rootDir, "f", slug, "index.html"),
+    postHtmlPath(rootDir, slug, defaults),
     "utf8",
   );
   const meta = extractGeneratedMeta(html, slug);
   return {
     slug,
-    file: "f/" + slug + "/index.html",
+    file: `${publicPostBase(defaults)}${slug}/index.html`,
     source: "generated-html",
     meta: {
       title: meta.title,
@@ -500,13 +502,13 @@ async function readGeneratedPost(rootDir, slug, defaults = {}) {
     body: extractArticleHtml(html),
     format: "html",
     isPublished: true,
-    images: await collectPostImages(rootDir, slug, meta.image, meta.title),
+    images: await collectPostImages(rootDir, slug, meta.image, meta.title, defaults),
   };
 }
 
-async function collectPostImages(rootDir, slug, featuredImage, title = "") {
-  const images = await listPostImages(rootDir, slug);
-  const featured = normalizeFeaturedImage(slug, featuredImage, title);
+async function collectPostImages(rootDir, slug, featuredImage, title = "", defaults = {}) {
+  const images = await listPostImages(rootDir, slug, defaults);
+  const featured = normalizeFeaturedImage(slug, featuredImage, title, defaults);
   if (!featured) return images;
 
   let hasFeatured = false;
@@ -519,7 +521,7 @@ async function collectPostImages(rootDir, slug, featuredImage, title = "") {
   return hasFeatured ? images : [featured, ...images];
 }
 
-function normalizeFeaturedImage(slug, value, title = "") {
+function normalizeFeaturedImage(slug, value, title = "", defaults = {}) {
   const raw = String(value || "").trim();
   if (!raw) return null;
 
@@ -527,7 +529,7 @@ function normalizeFeaturedImage(slug, value, title = "") {
   try {
     new URL(raw);
   } catch {
-    if (raw.startsWith("img/")) url = `/f/${slug}/${raw}`;
+    if (raw.startsWith("img/")) url = `${publicPostBase(defaults)}${slug}/${raw}`;
   }
 
   return {
@@ -548,6 +550,23 @@ function isSameImageReference(image, featured) {
     image.file === featured.file ||
     featured.url.endsWith(`/img/${image.file}`)
   );
+}
+
+function publicPostBase(defaults = {}) {
+  const base = String(defaults.publicPostBase || "/f/").trim();
+  return `/${base.replace(/^\/+|\/+$/g, "")}/`;
+}
+
+function postRoot(rootDir, defaults = {}) {
+  return path.join(rootDir, publicPostBase(defaults).replace(/^\/+|\/+$/g, ""));
+}
+
+function postDirectory(rootDir, slug, defaults = {}) {
+  return path.join(postRoot(rootDir, defaults), slug);
+}
+
+function postHtmlPath(rootDir, slug, defaults = {}) {
+  return path.join(postDirectory(rootDir, slug, defaults), "index.html");
 }
 
 function extractGeneratedMeta(html, slug) {

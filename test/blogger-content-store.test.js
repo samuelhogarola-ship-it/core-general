@@ -28,3 +28,20 @@ test("content store creates portable Markdown posts with caller defaults", async
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("content store supports a site-specific public post base", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "web-core-blogger-base-"));
+  try {
+    await savePost(
+      root,
+      null,
+      { title: "Post Sport Massage", description: "Descripcion", body: "Contenido" },
+      { publicPostBase: "/blog/" },
+    );
+    const post = await readPost(root, "post-sport-massage", { publicPostBase: "/blog/" });
+    assert.equal(post.isPublished, false);
+    assert.equal(post.file, "post-sport-massage.md");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
