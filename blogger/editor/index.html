@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blogger Studio</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Posts">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">B</span>
+          <div>
+            <strong>Posts</strong>
+            <span id="siteName">Blogger Studio</span>
+          </div>
+        </div>
+        <div class="search-row">
+          <input
+            id="search"
+            type="search"
+            placeholder="Buscar posts"
+            autocomplete="off"
+          />
+          <button id="newPost" type="button">Nuevo</button>
+        </div>
+        <div id="postList" class="post-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="editor" aria-label="Editor de post">
+        <header class="topbar">
+          <div>
+            <p id="statusText" class="status-text">Cargando posts...</p>
+            <h1 id="currentTitle">Gestor de contenidos</h1>
+          </div>
+          <div class="actions">
+            <a
+              id="viewPublished"
+              class="button-link secondary"
+              href="#"
+              target="_blank"
+              rel="noreferrer"
+              hidden
+              >Ver publicación</a
+            >
+            <button id="savePost" class="secondary" type="button">
+              Guardar borrador
+            </button>
+            <button id="publishPost" type="button">Publicar</button>
+          </div>
+        </header>
+
+        <section class="meta-grid" aria-label="Metadatos del post">
+          <label>Titulo<input id="title" type="text" /></label>
+          <label>Slug<input id="slug" type="text" /></label>
+          <label
+            >Descripcion SEO<textarea id="description" rows="3"></textarea>
+          </label>
+          <label>Fecha<input id="date" type="date" /></label>
+          <label>Idioma<input id="lang" type="text" /></label>
+          <label>Autor<input id="author" type="text" /></label>
+          <label
+            >Imagen destacada<input
+              id="image"
+              type="text"
+              placeholder="img/cover.webp o default"
+          /></label>
+          <label
+            >Etiquetas<input
+              id="tags"
+              type="text"
+              placeholder="goethe, b1, gramatica"
+          /></label>
+          <label>Categoria<input id="category" type="text" /></label>
+          <label
+            >Nivel<input id="level" type="text" placeholder="A2-B1"
+          /></label>
+          <label
+            >Estado<select id="status" disabled>
+              <option value="draft">Borrador</option>
+              <option value="published">Publicado</option>
+            </select></label
+          >
+        </section>
+
+        <section class="workspace">
+          <div class="writing-pane">
+            <div class="editor-tools">
+              <div class="view-tabs" aria-label="Vistas del editor">
+                <button class="is-active" data-view="visual" type="button">
+                  Vista normal
+                </button>
+                <button data-view="markdown" type="button">
+                  Editar Markdown
+                </button>
+                <button data-view="html" type="button">Vista HTML</button>
+              </div>
+              <div class="toolbar" aria-label="Formato">
+                <button data-command="undo" type="button" title="Deshacer">
+                  ↶
+                </button>
+                <button data-command="redo" type="button" title="Rehacer">
+                  ↷
+                </button>
+                <button
+                  data-wrap="**|**"
+                  data-placeholder="texto"
+                  type="button"
+                >
+                  <strong>B</strong>
+                </button>
+                <button data-wrap="*|*" data-placeholder="texto" type="button">
+                  <em>I</em>
+                </button>
+                <button
+                  data-line="## "
+                  data-placeholder="Subtitulo"
+                  type="button"
+                >
+                  H2
+                </button>
+                <button
+                  data-line="### "
+                  data-placeholder="Apartado"
+                  type="button"
+                >
+                  H3
+                </button>
+                <button
+                  data-wrap='<p class="blog-text-lg">|</p>'
+                  data-placeholder="Texto destacado"
+                  type="button"
+                >
+                  Grande
+                </button>
+                <button data-line="- " data-placeholder="Punto" type="button">
+                  Lista
+                </button>
+                <button
+                  data-wrap="[|](https://)"
+                  data-placeholder="texto"
+                  type="button"
+                >
+                  Link
+                </button>
+                <button id="insertImage" type="button">
+                  Insertar imagen aquí
+                </button>
+              </div>
+            </div>
+            <div
+              id="visualEditor"
+              class="visual-editor"
+              contenteditable="true"
+              role="textbox"
+              aria-label="Editor visual"
+              spellcheck="true"
+            ></div>
+            <textarea
+              id="body"
+              class="body-editor"
+              spellcheck="true"
+              hidden
+            ></textarea>
+            <article id="mainPreview" class="main-preview" hidden></article>
+            <pre id="htmlView" class="html-view" hidden></pre>
+            <input
+              id="inlineImageUpload"
+              class="visually-hidden"
+              type="file"
+              accept="image/*"
+            />
+            <div
+              id="selectionToolbar"
+              class="floating-toolbar selection-toolbar"
+              role="toolbar"
+              aria-label="Formato de la selección"
+              hidden
+            >
+              <button data-command="bold" type="button" title="Negrita">
+                <strong>B</strong>
+              </button>
+              <button data-command="italic" type="button" title="Cursiva">
+                <em>I</em>
+              </button>
+              <button data-block="h2" type="button">H2</button>
+              <button data-block="h3" type="button">H3</button>
+              <button data-command="insertUnorderedList" type="button">
+                Lista
+              </button>
+              <button id="selectionLink" type="button">Link</button>
+              <button id="selectionImage" type="button">Imagen</button>
+            </div>
+            <div
+              id="imageMoveToolbar"
+              class="floating-toolbar image-move-toolbar"
+              role="toolbar"
+              aria-label="Mover imagen"
+              hidden
+            >
+              <span>Arrastra o mueve</span>
+              <button
+                id="moveImageUp"
+                type="button"
+                title="Mover imagen arriba"
+              >
+                ↑
+              </button>
+              <button
+                id="moveImageDown"
+                type="button"
+                title="Mover imagen abajo"
+              >
+                ↓
+              </button>
+            </div>
+          </div>
+
+          <aside class="asset-pane" aria-label="Imagenes y vista previa">
+            <div class="asset-header">
+              <strong>Imagenes</strong>
+              <label class="file-button">
+                Subir
+                <input id="imageUpload" type="file" accept="image/*" multiple />
+              </label>
+            </div>
+            <div id="imageList" class="image-list"></div>
+            <form id="imageMetaForm" class="image-meta" hidden>
+              <strong id="selectedImageName">Imagen seleccionada</strong>
+              <label>Texto alt<input id="imageAlt" type="text" /></label>
+              <label
+                >Descripcion<textarea id="imageDescription" rows="3"></textarea>
+              </label>
+              <div class="image-meta-actions">
+                <button
+                  id="insertSelectedImage"
+                  class="secondary"
+                  type="button"
+                >
+                  Insertar en el cursor
+                </button>
+                <button id="setFeaturedImage" class="secondary" type="button">
+                  Usar como principal
+                </button>
+                <button id="saveImageMeta" type="button">Guardar imagen</button>
+              </div>
+            </form>
+            <div class="preview-header">
+              <strong>Vista rapida</strong>
+            </div>
+            <article id="preview" class="preview"></article>
+          </aside>
+        </section>
+      </section>
+    </main>
+    <script id="bloggerConfig" type="application/json">
+      {}
+    </script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
