@@ -62,7 +62,7 @@ Todas las webs nuevas pasan por [`docs/site-onboarding.md`](docs/site-onboarding
 npm run site:onboard -- --root "/ruta/web" --panel-root "/ruta/wf-studio-panel" --key "mi-web" --name "Mi Web" --domain "mi-web.com" --blogger
 ```
 
-El editor reutilizable y su contrato están en [`blogger/README.md`](blogger/README.md). El manifiesto generado nunca contiene secretos.
+El editor reutilizable y su contrato están en [`blogger/README.md`](blogger/README.md). Al activar Blogger, el alta genera `admin/blogger/index.html` como entrada directa al editor autorizado de esa web en Panel Studio; el manifiesto generado nunca contiene secretos.
 
 ## Uso rápido
 
