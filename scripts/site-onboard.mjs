@@ -1,21 +1,15 @@
 #!/usr/bin/env node
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  createBloggerConfig,
-  renderBloggerRuntimeConfig,
-} from "../src/blogger/config.js";
 import {
   normalizeSiteManifest,
   upsertSiteManifest,
 } from "../src/sites/registry.js";
 
-const packageRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
+const BLOGGER_STUDIO_ORIGIN = "https://admin.webfuengirola.com";
+const SITE_KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function parseArgs(argv) {
   const result = {};
@@ -47,27 +41,24 @@ async function readRegistry(registryPath) {
 
 async function installBlogger(siteRoot, site, args) {
   const target = path.resolve(siteRoot, args["blogger-dir"] || "admin/blogger");
-  await mkdir(path.dirname(target), { recursive: true });
-  await cp(path.join(packageRoot, "blogger", "editor"), target, {
-    recursive: true,
-    force: true,
-  });
-  const runtime = createBloggerConfig(site, {
-    ...(args["auth-module"] ? { authModule: args["auth-module"] } : {}),
-    ...(args.author ? { defaultAuthor: args.author } : {}),
-    ...(args.language ? { defaultLanguage: args.language } : {}),
-  });
-  const indexPath = path.join(target, "index.html");
-  const html = await readFile(indexPath, "utf8");
-  await writeFile(
-    indexPath,
-    html.replace(
-      /(<script id="bloggerConfig" type="application\/json">)[\s\S]*?(<\/script>)/,
-      (_, open, close) =>
-        `${open}${renderBloggerRuntimeConfig(runtime)}${close}`,
-    ),
-    "utf8",
-  );
+  if (!SITE_KEY_RE.test(site.key))
+    throw new Error("La key de Blogger no es valida.");
+  const destination = `${BLOGGER_STUDIO_ORIGIN}/acceso/blogger/${encodeURIComponent(site.key)}`;
+  const html = `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="refresh" content="0; url=${destination}">
+    <title>Abriendo Blogger</title>
+  </head>
+  <body>
+    <p><a href="${destination}" rel="noreferrer">Abrir Blogger</a></p>
+  </body>
+</html>
+`;
+  await mkdir(target, { recursive: true });
+  await writeFile(path.join(target, "index.html"), html, "utf8");
 }
 
 export async function onboardSite(args) {
