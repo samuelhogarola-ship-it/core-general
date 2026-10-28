@@ -1,8 +1,15 @@
-# Blogger Studio
+# WF-Blogger
 
-Esta carpeta contiene la distribución reutilizable del editor definitivo de posts. Conserva la barra contextual al seleccionar texto, la inserción de imágenes en la posición del cursor, el movimiento de imágenes entre bloques, Markdown/HTML, metadatos SEO, borradores y publicación.
+WF-Blogger es el producto editorial reutilizable de WF-Studio. Conserva la barra contextual al seleccionar texto, la inserción de imágenes en la posición del cursor, el movimiento de imágenes entre bloques, Markdown/HTML, metadatos SEO, borradores y publicación.
 
-`site:onboard --blogger` copia `editor/` a la web e incrusta una configuración sin secretos. La autenticación queda en un módulo propio del sitio indicado por `authModule`, que debe exportar:
+## Variantes canónicas
+
+- `static`: la web pública es estática. WF-Studio ejecuta el editor y publica en el repositorio de la web; un origen como `https://blogger.dominio.com` puede ofrecer la puerta de marca sin crear otra aplicación dinámica.
+- `vps`: la web es dinámica y vive en un VPS. WF-Studio ejecuta el mismo editor, pero persiste y publica mediante la raíz, API o build hook registrado para esa web.
+
+No existe una tercera variante por cliente. Core General define y valida el contrato; WF-Studio Panel ejecuta el runtime, permisos, acceso temporal y adaptadores; el repositorio de cada web conserva su contenido público.
+
+La copia de `editor/` realizada por el alta histórica se conserva únicamente para llamadas heredadas sin `blogger.variant`. Un alta explícita `static` o `vps` nunca copia ni sobrescribe ese directorio: registra el runtime central de Panel. La instalación heredada no constituye otro producto ni debe usarse para duplicar el runtime central. Su autenticación queda en un módulo propio del sitio indicado por `authModule`, que debe exportar:
 
 ```js
 export async function requireBloggerAccess() {
