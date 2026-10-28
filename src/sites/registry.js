@@ -153,6 +153,13 @@ export function validateSiteManifest(input = {}) {
     );
   if (input.blogger?.customOrigin)
     assertCustomOrigin(clean(input.blogger.customOrigin), domain);
+  if (
+    input.blogger?.customOrigin &&
+    !["central-multisite", "central-legacy"].includes(input.blogger.runtime)
+  )
+    throw new Error(
+      "blogger.customOrigin requiere un runtime central de WF-Blogger.",
+    );
   if (input.blogger?.logoPath)
     assertPublicAssetPath(input.blogger.logoPath, "blogger.logoPath");
   if (input.blogger?.previewImagePath)
@@ -253,11 +260,16 @@ export function upsertSiteManifest(registry = [], input = {}) {
     (entry) =>
       clean(entry.key).toLowerCase() === clean(input.key).toLowerCase(),
   );
-  const site = normalizeSiteManifest(
-    existing?.blogger
-      ? { ...input, blogger: { ...existing.blogger, ...input.blogger } }
-      : input,
-  );
+  const hydratedInput = existing
+    ? {
+        ...existing,
+        ...input,
+        panel: { ...existing.panel, ...input.panel },
+        analytics: { ...existing.analytics, ...input.analytics },
+        blogger: { ...existing.blogger, ...input.blogger },
+      }
+    : input;
+  const site = normalizeSiteManifest(hydratedInput);
   const merged = existing
     ? {
         ...existing,

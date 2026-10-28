@@ -138,3 +138,84 @@ test("legacy Blogger onboarding without an explicit variant keeps the copied edi
     await rm(workspace, { recursive: true, force: true });
   }
 });
+
+test("site onboarding preserves existing Panel Blogger endpoints when optional CLI flags are omitted", async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), "web-core-panel-owned-"));
+  const siteRoot = path.join(workspace, "site");
+  const panelRoot = path.join(workspace, "panel");
+  await mkdir(path.join(panelRoot, "src", "config"), { recursive: true });
+  await mkdir(siteRoot, { recursive: true });
+  await writeFile(
+    path.join(panelRoot, "src", "config", "sites.json"),
+    `${JSON.stringify(
+      [
+        {
+          schemaVersion: 1,
+          key: "agama",
+          name: "Agama",
+          domain: "agama.com.mx",
+          productionUrl: "https://www.agama.com.mx",
+          panel: { key: "reports-only", path: "/paneladmin/informes" },
+          analytics: {
+            source: "agama",
+            envSuffix: "AGAMA",
+            legacyDashboard: false,
+          },
+          blogger: {
+            enabled: true,
+            variant: "vps",
+            runtime: "central-multisite",
+            url: "https://admin.webfuengirola.com/paneladmin/blogger/agama",
+            apiBase: "/api/blogger/agama/posts",
+            buildEndpoint: "/api/blogger/agama/build",
+            contentDir: "entrada-de-blog",
+            publicPostBase: "/entrada-de-blog/",
+          },
+        },
+      ],
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+
+  try {
+    await execFileAsync(process.execPath, [
+      command,
+      "--root",
+      siteRoot,
+      "--panel-root",
+      panelRoot,
+      "--key",
+      "agama",
+      "--name",
+      "Agama",
+      "--domain",
+      "agama.com.mx",
+      "--url",
+      "https://www.agama.com.mx",
+      "--blogger",
+      "--blogger-variant",
+      "vps",
+      "--blogger-runtime",
+      "central-multisite",
+      "--blogger-url",
+      "https://admin.webfuengirola.com/paneladmin/blogger/agama",
+    ]);
+
+    const [registered] = JSON.parse(
+      await readFile(
+        path.join(panelRoot, "src", "config", "sites.json"),
+        "utf8",
+      ),
+    );
+    assert.equal(registered.analytics.source, "agama");
+    assert.equal(registered.panel.key, "reports-only");
+    assert.equal(registered.blogger.apiBase, "/api/blogger/agama/posts");
+    assert.equal(registered.blogger.buildEndpoint, "/api/blogger/agama/build");
+    assert.equal(registered.blogger.contentDir, "entrada-de-blog");
+    assert.equal(registered.blogger.publicPostBase, "/entrada-de-blog/");
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});

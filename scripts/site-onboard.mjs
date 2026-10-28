@@ -76,19 +76,18 @@ export async function onboardSite(args) {
   }
   const siteRoot = path.resolve(args.root);
   const panelRoot = path.resolve(args["panel-root"]);
-  const site = normalizeSiteManifest({
+  const siteInput = {
     key: args.key,
     name: args.name,
     domain: args.domain,
     ...(args.url ? { productionUrl: args.url } : {}),
     ...(args.repository ? { repository: args.repository } : {}),
     panel: {
-      key: args["panel-key"] || args.key,
-      path:
-        args["panel-path"] || `/paneladmin/${args["panel-key"] || args.key}`,
+      ...(args["panel-key"] ? { key: args["panel-key"] } : {}),
+      ...(args["panel-path"] ? { path: args["panel-path"] } : {}),
     },
     analytics: {
-      source: args["analytics-source"] || "personal",
+      ...(args["analytics-source"] ? { source: args["analytics-source"] } : {}),
       ...(args["analytics-env-suffix"]
         ? { envSuffix: args["analytics-env-suffix"] }
         : {}),
@@ -98,7 +97,7 @@ export async function onboardSite(args) {
       ...(args["analytics-legacy-label"]
         ? { legacyLabel: args["analytics-legacy-label"] }
         : {}),
-      legacyDashboard: Boolean(args["legacy-dashboard"]),
+      ...(args["legacy-dashboard"] ? { legacyDashboard: true } : {}),
     },
     blogger: {
       enabled: Boolean(args.blogger),
@@ -122,14 +121,18 @@ export async function onboardSite(args) {
         ? { publicPostBase: args["public-post-base"] }
         : {}),
     },
-  });
+  };
+  const site = normalizeSiteManifest(siteInput);
 
   const manifestPath = path.join(siteRoot, ".web-core", "site.json");
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, `${JSON.stringify(site, null, 2)}\n`, "utf8");
 
   const registryPath = path.join(panelRoot, "src", "config", "sites.json");
-  const registry = upsertSiteManifest(await readRegistry(registryPath), site);
+  const registry = upsertSiteManifest(
+    await readRegistry(registryPath),
+    siteInput,
+  );
   await mkdir(path.dirname(registryPath), { recursive: true });
   await writeFile(
     registryPath,

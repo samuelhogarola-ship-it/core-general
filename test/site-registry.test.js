@@ -267,6 +267,19 @@ test("WF-Blogger custom origins must be exact public HTTPS subdomains of the sit
       customOrigin,
     );
   }
+
+  assert.throws(
+    () =>
+      normalizeSiteManifest({
+        ...base,
+        blogger: {
+          ...base.blogger,
+          runtime: "external",
+          customOrigin: "https://blogger.demo.example.com",
+        },
+      }),
+    /customOrigin|origen|central|runtime/i,
+  );
 });
 
 test("the canonical registry identifies Sport Massage as WF-Blogger Static", async () => {
