@@ -103,6 +103,7 @@ export async function onboardSite(args) {
     blogger: {
       enabled: Boolean(args.blogger),
       ...(args["blogger-variant"] ? { variant: args["blogger-variant"] } : {}),
+      ...(args["blogger-runtime"] ? { runtime: args["blogger-runtime"] } : {}),
       ...(args["blogger-custom-origin"]
         ? { customOrigin: args["blogger-custom-origin"] }
         : {}),
@@ -136,8 +137,13 @@ export async function onboardSite(args) {
     "utf8",
   );
 
-  if (site.blogger.enabled) await installBlogger(siteRoot, site, args);
-  return { manifestPath, registryPath, bloggerInstalled: site.blogger.enabled };
+  const installLegacyEditor = site.blogger.enabled && !site.blogger.variant;
+  if (installLegacyEditor) await installBlogger(siteRoot, site, args);
+  return {
+    manifestPath,
+    registryPath,
+    bloggerInstalled: installLegacyEditor,
+  };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

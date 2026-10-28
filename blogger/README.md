@@ -9,7 +9,7 @@ WF-Blogger es el producto editorial reutilizable de WF-Studio. Conserva la barra
 
 No existe una tercera variante por cliente. Core General define y valida el contrato; WF-Studio Panel ejecuta el runtime, permisos, acceso temporal y adaptadores; el repositorio de cada web conserva su contenido público.
 
-La copia de `editor/` realizada por el alta histórica se conserva por compatibilidad con instalaciones existentes. No constituye otro producto ni debe usarse para duplicar el runtime central. La autenticación de esas instalaciones heredadas queda en un módulo propio del sitio indicado por `authModule`, que debe exportar:
+La copia de `editor/` realizada por el alta histórica se conserva únicamente para llamadas heredadas sin `blogger.variant`. Un alta explícita `static` o `vps` nunca copia ni sobrescribe ese directorio: registra el runtime central de Panel. La instalación heredada no constituye otro producto ni debe usarse para duplicar el runtime central. Su autenticación queda en un módulo propio del sitio indicado por `authModule`, que debe exportar:
 
 ```js
 export async function requireBloggerAccess() {

@@ -17,8 +17,9 @@ npm run site:onboard -- \
   --panel-key "mi-web" \
   --blogger \
   --blogger-variant "static" \
+  --blogger-runtime "central-multisite" \
   --blogger-custom-origin "https://blogger.mi-web.com" \
-  --auth-module "/assets/js/blogger-auth.js"
+  --blogger-url "https://portal.webfuengirola.com/acceso/blogger/mi-web"
 ```
 
 También puede ejecutarse como `web-core-site-onboard` cuando el paquete esté instalado. Repetir exactamente el mismo alta actualiza la entrada existente; nunca crea duplicados.
@@ -29,7 +30,7 @@ También puede ejecutarse como `web-core-site-onboard` cuando el paquete esté i
 2. `wf-studio-panel/src/config/sites.json` contiene una única entrada con la misma `key`.
 3. Panel Studio muestra la web, su panel y sus herramientas activas.
 4. Si se usa `--blogger`, el manifiesto registra explícitamente la variante `static` o `vps` que consume WF-Studio Panel.
-5. La instalación histórica de activos en `admin/blogger/` se conserva como compatibilidad; el runtime canónico es el editor central de WF-Studio.
+5. Un alta explícita `static` o `vps` registra el editor central y no copia ni sobrescribe `admin/blogger/`. Las llamadas heredadas con `--blogger` pero sin variante conservan la instalación histórica de activos por compatibilidad.
 6. El repositorio de la web implementa únicamente el adaptador de publicación que corresponda, descrito en `blogger/README.md`.
 
 No se debe añadir una web editando a mano las listas antiguas de analítica. El manifiesto y el registro canónico son la fuente para esas vistas.
@@ -43,12 +44,15 @@ No se debe añadir una web editando a mano las listas antiguas de analítica. El
 - `--legacy-dashboard`: incluye la web en la fachada antigua de estadísticas.
 - `--analytics-legacy-key`: conserva una clave antigua sin duplicar el sitio.
 - `--analytics-legacy-label`: conserva el nombre visible de una fachada antigua.
-- `--blogger-url`: URL publicada del editor si no es `/admin/blogger/`.
+- `--blogger-url`: acceso directo que Panel ya tiene provisionado para el sitio; es obligatorio con una variante explícita.
 - `--blogger-dir`: destino de los activos dentro de la web.
 - `--blogger-variant`: `static` para publicación en repositorio o `vps` para almacenamiento/build dinámico.
+- `--blogger-runtime`: runtime operativo ya provisionado en Panel (`central-multisite`, `central-legacy` o `external`); es obligatorio con una variante explícita.
 - `--blogger-custom-origin`: origen HTTPS de marca, sin ruta, como `https://blogger.mi-web.com`.
 - `--blogger-logo-path`: ruta pública segura del logotipo que mostrará Studio.
 - `--blogger-preview-image-path`: ruta pública segura de la portada de WF-Blogger.
+
+El alta conserva `runtime`, adaptadores, capacidades y endpoints operativos que ya pertenezcan a la entrada de Panel. No se deben sustituir esos campos desde Core General: su implementación y revisión siguen perteneciendo al repositorio `wf-studio-panel`.
 
 ## Cierre del alta
 

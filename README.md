@@ -59,7 +59,7 @@ styles/
 Todas las webs nuevas pasan por [`docs/site-onboarding.md`](docs/site-onboarding.md). El comando acepta rutas absolutas, por lo que funciona independientemente del repositorio o carpeta desde la que se haya creado la web:
 
 ```sh
-npm run site:onboard -- --root "/ruta/web" --panel-root "/ruta/wf-studio-panel" --key "mi-web" --name "Mi Web" --domain "mi-web.com" --blogger --blogger-variant static
+npm run site:onboard -- --root "/ruta/web" --panel-root "/ruta/wf-studio-panel" --key "mi-web" --name "Mi Web" --domain "mi-web.com" --blogger --blogger-variant static --blogger-runtime central-multisite --blogger-url "https://portal.webfuengirola.com/acceso/blogger/mi-web"
 ```
 
 WF-Blogger tiene dos variantes: `static`, para webs estáticas que publican mediante el repositorio y usan el runtime central de Studio, y `vps`, para webs dinámicas cuyo almacenamiento o reconstrucción vive en un VPS. El editor, la autenticación y las traducciones siguen siendo un único producto central en WF-Studio Panel. El editor reutilizable y su contrato están en [`blogger/README.md`](blogger/README.md). El manifiesto generado nunca contiene secretos.

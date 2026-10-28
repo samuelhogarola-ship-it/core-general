@@ -18,8 +18,9 @@
     "blogger": {
       "enabled": true,
       "variant": "static",
+      "runtime": "central-legacy",
       "customOrigin": "https://blogger.sportmassagefuengirola.com",
-      "url": "https://blogger.sportmassagefuengirola.com/",
+      "url": "https://portal.webfuengirola.com/acceso/blogger/sportmassagefuengirola",
       "apiBase": "/api/posts",
       "buildEndpoint": "/api/build",
       "publicPostBase": "/blog/"

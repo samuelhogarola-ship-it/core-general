@@ -41,10 +41,10 @@
 - Consumes: existing `normalizeSiteManifest(input)` and `site:onboard` CLI.
 - Produces: `blogger.variant`, `blogger.customOrigin`, `blogger.logoPath`, and `blogger.previewImagePath`.
 
-- [ ] Add failing registry and onboarding tests for both variants and safe branding paths.
-- [ ] Run the focused tests and confirm failures describe missing metadata.
-- [ ] Implement validation, normalization and CLI argument mapping.
-- [ ] Run focused and full Core General checks.
+- [x] Add failing registry and onboarding tests for both variants and safe branding paths.
+- [x] Run the focused tests and confirm failures describe missing metadata.
+- [x] Implement validation, normalization and CLI argument mapping.
+- [x] Run focused and full Core General checks.
 
 ### Task 2: Document the product boundary
 
@@ -59,6 +59,6 @@
 - Consumes: the Task 1 manifest fields.
 - Produces: the canonical responsibility split between Core General, WF-Studio Panel and each website repository.
 
-- [ ] Document WF-Blogger Static and WF-Blogger VPS.
-- [ ] Mark copied editor assets as compatibility behavior, not a third product model.
-- [ ] Verify formatting and repository status.
+- [x] Document WF-Blogger Static and WF-Blogger VPS.
+- [x] Mark copied editor assets as compatibility behavior, not a third product model.
+- [x] Verify formatting and repository status.

@@ -84,6 +84,54 @@ test("registry upsert replaces by key and returns deterministic ordering", () =>
   assert.equal(result.length, 2);
 });
 
+test("registry upsert preserves Panel-owned Blogger runtime and adapter metadata", () => {
+  const registry = [
+    {
+      schemaVersion: 1,
+      key: "agama",
+      name: "Agama",
+      domain: "agama.com.mx",
+      productionUrl: "https://www.agama.com.mx",
+      panel: { key: "reports-only", path: "/paneladmin/informes" },
+      analytics: {
+        source: "agama",
+        envSuffix: "AGAMA",
+        legacyDashboard: false,
+      },
+      blogger: {
+        enabled: true,
+        variant: "vps",
+        runtime: "central-multisite",
+        url: "https://admin.webfuengirola.com/paneladmin/blogger/agama",
+        adapter: "supabase-api",
+        capabilities: ["posts", "media", "publish"],
+        launchUrl: "https://www.agama.com.mx/api/blogger/launch",
+        healthUrl: "https://www.agama.com.mx/api/blogger/health",
+      },
+    },
+  ];
+
+  const [result] = upsertSiteManifest(registry, {
+    key: "agama",
+    name: "Agama México",
+    domain: "agama.com.mx",
+    blogger: { enabled: true, variant: "vps" },
+  });
+
+  assert.equal(result.name, "Agama México");
+  assert.equal(result.blogger.runtime, "central-multisite");
+  assert.equal(result.blogger.adapter, "supabase-api");
+  assert.deepEqual(result.blogger.capabilities, ["posts", "media", "publish"]);
+  assert.equal(
+    result.blogger.launchUrl,
+    "https://www.agama.com.mx/api/blogger/launch",
+  );
+  assert.equal(
+    result.blogger.healthUrl,
+    "https://www.agama.com.mx/api/blogger/health",
+  );
+});
+
 test("site manifests preserve explicit legacy analytics aliases", () => {
   const site = normalizeSiteManifest({
     key: "todoplastico",
@@ -115,6 +163,8 @@ test("WF-Blogger registers the static and VPS variants with safe public branding
     blogger: {
       enabled: true,
       variant: "static",
+      runtime: "central-multisite",
+      url: "https://portal.webfuengirola.com/acceso/blogger/static-site",
       customOrigin: "https://blogger.static.example.com",
       logoPath: "/brands/static/logo.png",
       previewImagePath: "/brands/static/wf-blogger-preview.webp",
@@ -124,7 +174,12 @@ test("WF-Blogger registers the static and VPS variants with safe public branding
     key: "vps-site",
     name: "VPS Site",
     domain: "vps.example.com",
-    blogger: { enabled: true, variant: "vps" },
+    blogger: {
+      enabled: true,
+      variant: "vps",
+      runtime: "central-multisite",
+      url: "https://admin.webfuengirola.com/paneladmin/blogger/vps-site",
+    },
   });
 
   assert.equal(staticSite.blogger.variant, "static");
@@ -145,7 +200,12 @@ test("WF-Blogger rejects unknown variants and unsafe public branding paths", () 
     key: "demo",
     name: "Demo",
     domain: "demo.example.com",
-    blogger: { enabled: true, variant: "static" },
+    blogger: {
+      enabled: true,
+      variant: "static",
+      runtime: "central-multisite",
+      url: "https://portal.webfuengirola.com/acceso/blogger/demo",
+    },
   };
 
   assert.throws(
@@ -174,6 +234,38 @@ test("WF-Blogger rejects unknown variants and unsafe public branding paths", () 
   }
 });
 
+test("WF-Blogger custom origins must be exact public HTTPS subdomains of the site", () => {
+  const base = {
+    key: "demo",
+    name: "Demo",
+    domain: "demo.example.com",
+    blogger: {
+      enabled: true,
+      variant: "static",
+      runtime: "central-multisite",
+      url: "https://portal.webfuengirola.com/acceso/blogger/demo",
+    },
+  };
+
+  for (const customOrigin of [
+    "https://evil.com",
+    "https://localhost",
+    "https://127.0.0.1",
+    "https://blogger.demo.example.com:8443",
+    "https://blogger.demo.example.com/path",
+  ]) {
+    assert.throws(
+      () =>
+        normalizeSiteManifest({
+          ...base,
+          blogger: { ...base.blogger, customOrigin },
+        }),
+      /customOrigin|origen|dominio|público|subdominio/i,
+      customOrigin,
+    );
+  }
+});
+
 test("the canonical registry identifies Sport Massage as WF-Blogger Static", async () => {
   const registry = JSON.parse(
     await readFile(
@@ -191,6 +283,6 @@ test("the canonical registry identifies Sport Massage as WF-Blogger Static", asy
   );
   assert.equal(
     sport.blogger.url,
-    "https://blogger.sportmassagefuengirola.com/",
+    "https://portal.webfuengirola.com/acceso/blogger/sportmassagefuengirola",
   );
 });
