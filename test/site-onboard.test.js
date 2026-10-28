@@ -155,6 +155,7 @@ test("site onboarding preserves existing Panel Blogger endpoints when optional C
           name: "Agama",
           domain: "agama.com.mx",
           productionUrl: "https://www.agama.com.mx",
+          allowedOrigins: ["https://admin.agama.com.mx"],
           panel: { key: "reports-only", path: "/paneladmin/informes" },
           analytics: {
             source: "agama",
@@ -210,6 +211,7 @@ test("site onboarding preserves existing Panel Blogger endpoints when optional C
       ),
     );
     assert.equal(registered.analytics.source, "agama");
+    assert.deepEqual(registered.allowedOrigins, ["https://admin.agama.com.mx"]);
     assert.equal(registered.panel.key, "reports-only");
     assert.equal(registered.blogger.apiBase, "/api/blogger/agama/posts");
     assert.equal(registered.blogger.buildEndpoint, "/api/blogger/agama/build");

@@ -260,9 +260,16 @@ export function upsertSiteManifest(registry = [], input = {}) {
     (entry) =>
       clean(entry.key).toLowerCase() === clean(input.key).toLowerCase(),
   );
+  const existingPortable = existing
+    ? Object.fromEntries(
+        Object.entries(existing).filter(([field]) =>
+          TOP_LEVEL_FIELDS.has(field),
+        ),
+      )
+    : null;
   const hydratedInput = existing
     ? {
-        ...existing,
+        ...existingPortable,
         ...input,
         panel: { ...existing.panel, ...input.panel },
         analytics: { ...existing.analytics, ...input.analytics },
