@@ -51,10 +51,16 @@ function assertHttpsUrl(value, field) {
 }
 
 function assertHttpsOrigin(value, field) {
-  const normalized = assertHttpsUrl(value, field);
-  const url = new URL(normalized);
+  const original = clean(value);
+  let url;
+  try {
+    url = new URL(original);
+  } catch {
+    throw new Error(`${field} debe ser un origen HTTPS sin ruta.`);
+  }
   if (
-    normalized !== url.origin ||
+    url.protocol !== "https:" ||
+    original !== url.origin ||
     url.username ||
     url.password ||
     url.port ||
@@ -82,6 +88,9 @@ function assertCustomOrigin(value, domain) {
   if (
     isIpLiteral(hostname) ||
     labels.length < 2 ||
+    labels.some(
+      (label) => !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label),
+    ) ||
     !suffix ||
     LOCAL_SUFFIXES.has(suffix) ||
     (!/^[a-z]{2,63}$/.test(suffix) && !/^xn--[a-z0-9-]{2,59}$/.test(suffix)) ||

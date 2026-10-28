@@ -252,6 +252,9 @@ test("WF-Blogger custom origins must be exact public HTTPS subdomains of the sit
     "https://localhost",
     "https://127.0.0.1",
     "https://blogger.demo.example.com:8443",
+    "https://blogger.demo.example.com/",
+    "https://BLOGGER.demo.example.com",
+    "https://bad_host.demo.example.com",
     "https://blogger.demo.example.com/path",
   ]) {
     assert.throws(
