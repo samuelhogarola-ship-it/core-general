@@ -27,6 +27,28 @@ function assertHttpsUrl(value, field) {
   return url.toString().replace(/\/$/, "");
 }
 
+function assertHttpsOrigin(value, field) {
+  const normalized = assertHttpsUrl(value, field);
+  const url = new URL(normalized);
+  if (normalized !== url.origin)
+    throw new Error(`${field} debe ser un origen HTTPS sin ruta.`);
+  return url.origin;
+}
+
+function assertPublicAssetPath(value, field) {
+  const path = clean(value);
+  if (
+    !path.startsWith("/") ||
+    path.startsWith("//") ||
+    path.includes("..") ||
+    path.includes("?") ||
+    path.includes("#") ||
+    !/^\/[a-zA-Z0-9/_-]+\.(?:avif|png|svg|webp)$/.test(path)
+  )
+    throw new Error(`${field} debe ser una ruta pública segura.`);
+  return path;
+}
+
 export function validateSiteManifest(input = {}) {
   for (const field of Object.keys(input)) {
     if (!TOP_LEVEL_FIELDS.has(field))
@@ -47,6 +69,23 @@ export function validateSiteManifest(input = {}) {
   if (input.repository) assertHttpsUrl(clean(input.repository), "repository");
   if (input.blogger?.url)
     assertHttpsUrl(clean(input.blogger.url), "blogger.url");
+  if (
+    input.blogger?.variant &&
+    !["static", "vps"].includes(input.blogger.variant)
+  )
+    throw new Error("blogger.variant debe ser static o vps.");
+  if (input.blogger?.customOrigin)
+    assertHttpsOrigin(
+      clean(input.blogger.customOrigin),
+      "blogger.customOrigin",
+    );
+  if (input.blogger?.logoPath)
+    assertPublicAssetPath(input.blogger.logoPath, "blogger.logoPath");
+  if (input.blogger?.previewImagePath)
+    assertPublicAssetPath(
+      input.blogger.previewImagePath,
+      "blogger.previewImagePath",
+    );
   return true;
 }
 
@@ -97,6 +136,31 @@ export function normalizeSiteManifest(input = {}) {
       enabled: bloggerEnabled,
       ...(bloggerEnabled
         ? {
+            ...(blogger.variant ? { variant: blogger.variant } : {}),
+            ...(blogger.customOrigin
+              ? {
+                  customOrigin: assertHttpsOrigin(
+                    clean(blogger.customOrigin),
+                    "blogger.customOrigin",
+                  ),
+                }
+              : {}),
+            ...(blogger.logoPath
+              ? {
+                  logoPath: assertPublicAssetPath(
+                    blogger.logoPath,
+                    "blogger.logoPath",
+                  ),
+                }
+              : {}),
+            ...(blogger.previewImagePath
+              ? {
+                  previewImagePath: assertPublicAssetPath(
+                    blogger.previewImagePath,
+                    "blogger.previewImagePath",
+                  ),
+                }
+              : {}),
             url: blogger.url
               ? `${assertHttpsUrl(clean(blogger.url), "blogger.url")}/`
               : `${productionUrl}/admin/blogger/`,

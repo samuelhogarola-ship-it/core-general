@@ -102,6 +102,16 @@ export async function onboardSite(args) {
     },
     blogger: {
       enabled: Boolean(args.blogger),
+      ...(args["blogger-variant"] ? { variant: args["blogger-variant"] } : {}),
+      ...(args["blogger-custom-origin"]
+        ? { customOrigin: args["blogger-custom-origin"] }
+        : {}),
+      ...(args["blogger-logo-path"]
+        ? { logoPath: args["blogger-logo-path"] }
+        : {}),
+      ...(args["blogger-preview-image-path"]
+        ? { previewImagePath: args["blogger-preview-image-path"] }
+        : {}),
       ...(args["blogger-url"] ? { url: args["blogger-url"] } : {}),
       ...(args["api-base"] ? { apiBase: args["api-base"] } : {}),
       ...(args["build-endpoint"]

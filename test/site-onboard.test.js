@@ -41,6 +41,14 @@ test("site onboarding works from any directory and stays idempotent", async () =
     "--panel-key",
     "example",
     "--blogger",
+    "--blogger-variant",
+    "static",
+    "--blogger-custom-origin",
+    "https://blogger.example.com",
+    "--blogger-logo-path",
+    "/brands/example/logo.png",
+    "--blogger-preview-image-path",
+    "/brands/example/wf-blogger-preview.png",
     "--auth-module",
     "/assets/js/admin-blogger-auth.js",
   ];
@@ -64,6 +72,13 @@ test("site onboarding works from any directory and stays idempotent", async () =
     );
 
     assert.equal(manifest.blogger.enabled, true);
+    assert.equal(manifest.blogger.variant, "static");
+    assert.equal(manifest.blogger.customOrigin, "https://blogger.example.com");
+    assert.equal(manifest.blogger.logoPath, "/brands/example/logo.png");
+    assert.equal(
+      manifest.blogger.previewImagePath,
+      "/brands/example/wf-blogger-preview.png",
+    );
     assert.equal(registry.length, 1);
     assert.equal(registry[0].key, "example");
     assert.match(editorHtml, /Example Site/);

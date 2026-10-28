@@ -16,6 +16,8 @@ npm run site:onboard -- \
   --repository "https://github.com/organizacion/mi-web" \
   --panel-key "mi-web" \
   --blogger \
+  --blogger-variant "static" \
+  --blogger-custom-origin "https://blogger.mi-web.com" \
   --auth-module "/assets/js/blogger-auth.js"
 ```
 
@@ -26,8 +28,9 @@ También puede ejecutarse como `web-core-site-onboard` cuando el paquete esté i
 1. La web contiene `.web-core/site.json`, sin secretos ni rutas locales.
 2. `wf-studio-panel/src/config/sites.json` contiene una única entrada con la misma `key`.
 3. Panel Studio muestra la web, su panel y sus herramientas activas.
-4. Si se usa `--blogger`, los activos del editor quedan instalados en `admin/blogger/` y la URL pública se registra en Panel Studio.
-5. El repositorio de la web implementa el adaptador de autenticación y los endpoints descritos en `blogger/README.md`.
+4. Si se usa `--blogger`, el manifiesto registra explícitamente la variante `static` o `vps` que consume WF-Studio Panel.
+5. La instalación histórica de activos en `admin/blogger/` se conserva como compatibilidad; el runtime canónico es el editor central de WF-Studio.
+6. El repositorio de la web implementa únicamente el adaptador de publicación que corresponda, descrito en `blogger/README.md`.
 
 No se debe añadir una web editando a mano las listas antiguas de analítica. El manifiesto y el registro canónico son la fuente para esas vistas.
 
@@ -42,6 +45,10 @@ No se debe añadir una web editando a mano las listas antiguas de analítica. El
 - `--analytics-legacy-label`: conserva el nombre visible de una fachada antigua.
 - `--blogger-url`: URL publicada del editor si no es `/admin/blogger/`.
 - `--blogger-dir`: destino de los activos dentro de la web.
+- `--blogger-variant`: `static` para publicación en repositorio o `vps` para almacenamiento/build dinámico.
+- `--blogger-custom-origin`: origen HTTPS de marca, sin ruta, como `https://blogger.mi-web.com`.
+- `--blogger-logo-path`: ruta pública segura del logotipo que mostrará Studio.
+- `--blogger-preview-image-path`: ruta pública segura de la portada de WF-Blogger.
 
 ## Cierre del alta
 
