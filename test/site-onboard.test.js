@@ -18,6 +18,34 @@ const execFileAsync = promisify(execFile);
 const command = fileURLToPath(
   new URL("../scripts/site-onboard.mjs", import.meta.url),
 );
+const canonicalAnalyticsRuntime = fileURLToPath(
+  new URL("../src/analytics/umami-browser.js", import.meta.url),
+);
+
+function analyticsProfile() {
+  return {
+    schemaVersion: 1,
+    languages: [
+      {
+        key: "en",
+        label: "English",
+        routes: { exact: ["/en"], prefixes: ["en/"] },
+      },
+    ],
+    sections: [
+      {
+        key: "blog",
+        label: "Blog",
+        routes: { exact: [], prefixes: ["en/blog/"] },
+      },
+    ],
+    allowedEvents: [
+      { key: "form_start", label: "Form start", category: "commercial" },
+    ],
+    allowedContextKeys: ["market"],
+    excludedDestinations: ["https://portal.example.com/"],
+  };
+}
 
 test("site onboarding works from any directory and stays idempotent", async () => {
   const workspace = await mkdtemp(path.join(tmpdir(), "web-core-onboard-"));
@@ -217,6 +245,114 @@ test("site onboarding preserves existing Panel Blogger endpoints when optional C
     assert.equal(registered.blogger.buildEndpoint, "/api/blogger/agama/build");
     assert.equal(registered.blogger.contentDir, "entrada-de-blog");
     assert.equal(registered.blogger.publicPostBase, "/entrada-de-blog/");
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("analytics profile onboarding installs the canonical runtime and updates both manifests idempotently", async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), "web-core-analytics-"));
+  const siteRoot = path.join(workspace, "site");
+  const panelRoot = path.join(workspace, "panel");
+  const profilePath = path.join(workspace, "analytics-profile.json");
+  await mkdir(path.join(panelRoot, "src", "config"), { recursive: true });
+  await mkdir(siteRoot, { recursive: true });
+  await writeFile(path.join(panelRoot, "src", "config", "sites.json"), "[]\n");
+  await writeFile(profilePath, JSON.stringify(analyticsProfile()), "utf8");
+  const args = [
+    command,
+    "--root",
+    siteRoot,
+    "--panel-root",
+    panelRoot,
+    "--key",
+    "analytics-site",
+    "--name",
+    "Analytics Site",
+    "--domain",
+    "analytics.example.com",
+    "--analytics-profile",
+    profilePath,
+  ];
+
+  try {
+    const first = await execFileAsync(process.execPath, args);
+    const second = await execFileAsync(process.execPath, args);
+    assert.equal(JSON.parse(first.stdout).analyticsInstalled, true);
+    assert.equal(JSON.parse(second.stdout).analyticsInstalled, true);
+    assert.equal(
+      await readFile(path.join(siteRoot, "umami-analytics-core.js"), "utf8"),
+      await readFile(canonicalAnalyticsRuntime, "utf8"),
+    );
+    const installedProfile = JSON.parse(
+      await readFile(path.join(siteRoot, "analytics-profile.json"), "utf8"),
+    );
+    assert.deepEqual(installedProfile.languages[0].routes.prefixes, ["/en/"]);
+    assert.deepEqual(installedProfile.excludedDestinations, [
+      "https://portal.example.com",
+    ]);
+    const siteManifest = JSON.parse(
+      await readFile(path.join(siteRoot, ".web-core", "site.json"), "utf8"),
+    );
+    const registry = JSON.parse(
+      await readFile(
+        path.join(panelRoot, "src", "config", "sites.json"),
+        "utf8",
+      ),
+    );
+    assert.deepEqual(siteManifest.analytics.profile, installedProfile);
+    assert.equal(registry.length, 1);
+    assert.deepEqual(registry[0].analytics.profile, installedProfile);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("invalid analytics profiles fail before any onboarding write", async () => {
+  const workspace = await mkdtemp(
+    path.join(tmpdir(), "web-core-invalid-analytics-"),
+  );
+  const siteRoot = path.join(workspace, "site");
+  const panelRoot = path.join(workspace, "panel");
+  const profilePath = path.join(workspace, "invalid-profile.json");
+  const registryPath = path.join(panelRoot, "src", "config", "sites.json");
+  await mkdir(path.dirname(registryPath), { recursive: true });
+  await mkdir(siteRoot, { recursive: true });
+  await writeFile(registryPath, "[]\n", "utf8");
+  await writeFile(
+    profilePath,
+    JSON.stringify({ ...analyticsProfile(), privatePassword: "forbidden" }),
+    "utf8",
+  );
+
+  try {
+    await assert.rejects(
+      execFileAsync(process.execPath, [
+        command,
+        "--root",
+        siteRoot,
+        "--panel-root",
+        panelRoot,
+        "--key",
+        "invalid-analytics",
+        "--name",
+        "Invalid Analytics",
+        "--domain",
+        "invalid.example.com",
+        "--analytics-profile",
+        profilePath,
+      ]),
+      /no est.*permitid/i,
+    );
+    assert.equal(await readFile(registryPath, "utf8"), "[]\n");
+    await assert.rejects(
+      access(path.join(siteRoot, ".web-core", "site.json")),
+      /ENOENT/,
+    );
+    await assert.rejects(
+      access(path.join(siteRoot, "umami-analytics-core.js")),
+      /ENOENT/,
+    );
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

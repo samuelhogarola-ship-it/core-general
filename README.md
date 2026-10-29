@@ -1,5 +1,31 @@
 # web-core
 
+## Analítica Umami reutilizable
+
+`src/analytics/umami-browser.js` es un activo clásico de navegador, sin
+dependencias. Publica la misma API como `window.UmamiAnalyticsCore` y
+`window.WFAnalytics` para mantener compatibilidad con sitios existentes:
+
+- `init(config)` carga una sola vez el tracker con un perfil analítico público;
+- `trackEvent(name, data)` acepta únicamente eventos y campos declarados por el
+  perfil;
+- `trackPageview(path, title)` envía un pageview manual real para navegación
+  dinámica;
+- `bindAutoEvents()` registra eventos declarativos e hitos visibles de 15, 30,
+  60 y 120 segundos;
+- `grantConsent()`, `revokeConsent()` y `_reset()` controlan el ciclo de vida.
+
+Los hitos pausan el reloj cuando la pestaña no está visible y se emiten una sola
+vez por carga. Expresan umbrales alcanzados, no una duración exacta de salida.
+El perfil y los datos de evento no deben incluir PII, credenciales, IDs privados
+ni valores escritos por usuarios.
+
+El alta canónica acepta `--analytics-profile /ruta/absoluta/perfil.json`. Antes
+de escribir manifiestos valida el perfil, instala el runtime como
+`umami-analytics-core.js` y conserva una copia normalizada como
+`analytics-profile.json`. El perfil es configuración pública: los website IDs y
+las credenciales privadas se inyectan fuera de este archivo.
+
 `web-core` es una base reusable para tus webs y templates comerciales.
 
 El foco de esta primera versión es lo que mejor encaja con un producto transversal:

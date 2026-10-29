@@ -212,6 +212,9 @@ export function normalizeSiteManifest(input = {}) {
       ...(analytics.legacyLabel
         ? { legacyLabel: clean(analytics.legacyLabel) }
         : {}),
+      ...(analytics.profile
+        ? { profile: normalizeAnalyticsProfile(analytics.profile) }
+        : {}),
     },
     blogger: {
       enabled: bloggerEnabled,
@@ -299,3 +302,4 @@ export function upsertSiteManifest(registry = [], input = {}) {
     merged,
   ].sort((left, right) => clean(left.key).localeCompare(clean(right.key)));
 }
+import { normalizeAnalyticsProfile } from "../analytics/profile.js";

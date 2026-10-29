@@ -15,6 +15,7 @@ npm run site:onboard -- \
   --domain "mi-web.com" \
   --repository "https://github.com/organizacion/mi-web" \
   --panel-key "mi-web" \
+  --analytics-profile "/ruta/a/analytics-profile.json" \
   --blogger \
   --blogger-variant "static" \
   --blogger-runtime "central-multisite" \
@@ -32,6 +33,9 @@ También puede ejecutarse como `web-core-site-onboard` cuando el paquete esté i
 4. Si se usa `--blogger`, el manifiesto registra explícitamente la variante `static` o `vps` que consume WF-Studio Panel.
 5. Un alta explícita `static` o `vps` registra el editor central y no copia ni sobrescribe `admin/blogger/`. Las llamadas heredadas con `--blogger` pero sin variante conservan la instalación histórica de activos por compatibilidad.
 6. El repositorio de la web implementa únicamente el adaptador de publicación que corresponda, descrito en `blogger/README.md`.
+7. Si se usa `--analytics-profile`, la web recibe `umami-analytics-core.js` y
+   `analytics-profile.json`, y el mismo perfil normalizado queda en ambos
+   manifiestos.
 
 No se debe añadir una web editando a mano las listas antiguas de analítica. El manifiesto y el registro canónico son la fuente para esas vistas.
 
@@ -44,6 +48,9 @@ No se debe añadir una web editando a mano las listas antiguas de analítica. El
 - `--legacy-dashboard`: incluye la web en la fachada antigua de estadísticas.
 - `--analytics-legacy-key`: conserva una clave antigua sin duplicar el sitio.
 - `--analytics-legacy-label`: conserva el nombre visible de una fachada antigua.
+- `--analytics-profile`: ruta al perfil público de idiomas, secciones, eventos y
+  exclusiones. El perfil nunca puede contener website IDs, passwords,
+  credenciales Umami, PII ni rutas privadas del servidor.
 - `--blogger-url`: acceso directo que Panel ya tiene provisionado para el sitio; es obligatorio con una variante explícita.
 - `--blogger-dir`: destino de los activos dentro de la web.
 - `--blogger-variant`: `static` para publicación en repositorio o `vps` para almacenamiento/build dinámico.
