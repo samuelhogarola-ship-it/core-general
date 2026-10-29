@@ -223,6 +223,18 @@ test("drops disallowed event names and unsupported context fields", () => {
   assert.equal(calls[0][1].email, undefined);
 });
 
+test("a route prefix classifies both its directory root and descendants", () => {
+  const browser = createBrowser({ pathname: "/en/blog/" });
+  const calls = [];
+  browser.window.umami = { track: (...args) => calls.push(args) };
+  browser.window.UmamiAnalyticsCore.init(config());
+
+  browser.window.WFAnalytics.trackEvent("language_switch");
+
+  assert.equal(calls[0][1].contentLanguage, "en");
+  assert.equal(calls[0][1].section, "blog");
+});
+
 test("manual pageviews use an Umami pageview payload instead of a custom pageview event", () => {
   const browser = createBrowser();
   const calls = [];

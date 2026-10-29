@@ -205,8 +205,12 @@ function resolveDimension(items, pathname) {
   prefixes.sort((left, right) => right.path.length - left.path.length);
   return (
     exact.find((rule) => pathname === rule.path)?.key ||
-    prefixes.find((rule) => rule.path === "/" || pathname.startsWith(rule.path))
-      ?.key ||
+    prefixes.find(
+      (rule) =>
+        rule.path === "/" ||
+        pathname === rule.path.slice(0, -1) ||
+        pathname.startsWith(rule.path),
+    )?.key ||
     ""
   );
 }

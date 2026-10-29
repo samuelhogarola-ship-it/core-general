@@ -102,7 +102,11 @@
     });
     if (exactMatch) return exactMatch.key;
     var prefixMatch = prefixes.find(function matches(rule) {
-      return rule.path === "/" || pathname.indexOf(rule.path) === 0;
+      return (
+        rule.path === "/" ||
+        pathname === rule.path.slice(0, -1) ||
+        pathname.indexOf(rule.path) === 0
+      );
     });
     return prefixMatch ? prefixMatch.key : "";
   }

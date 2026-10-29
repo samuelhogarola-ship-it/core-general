@@ -119,6 +119,13 @@ test("resolves exact rules before prefixes and the longest prefix first", () => 
   );
   assert.deepEqual(
     resolveAnalyticsContext(profile, {
+      pathname: "/en/blog/",
+      documentLanguage: "es-ES",
+    }),
+    { contentLanguage: "en", section: "blog" },
+  );
+  assert.deepEqual(
+    resolveAnalyticsContext(profile, {
       pathname: "/en/blog/featured",
       documentLanguage: "es",
     }),
