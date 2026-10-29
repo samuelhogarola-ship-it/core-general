@@ -20,6 +20,12 @@ vez por carga. Expresan umbrales alcanzados, no una duración exacta de salida.
 El perfil y los datos de evento no deben incluir PII, credenciales, IDs privados
 ni valores escritos por usuarios.
 
+El alta canónica acepta `--analytics-profile /ruta/absoluta/perfil.json`. Antes
+de escribir manifiestos valida el perfil, instala el runtime como
+`umami-analytics-core.js` y conserva una copia normalizada como
+`analytics-profile.json`. El perfil es configuración pública: los website IDs y
+las credenciales privadas se inyectan fuera de este archivo.
+
 `web-core` es una base reusable para tus webs y templates comerciales.
 
 El foco de esta primera versión es lo que mejor encaja con un producto transversal:

@@ -155,6 +155,73 @@ test("site manifests preserve explicit legacy analytics aliases", () => {
   });
 });
 
+test("site manifests normalize and preserve reusable analytics profiles", () => {
+  const analyticsProfile = {
+    schemaVersion: 1,
+    languages: [
+      {
+        key: "es",
+        label: "Español",
+        routes: { exact: ["/"], prefixes: ["/es/"] },
+      },
+    ],
+    sections: [
+      {
+        key: "blog",
+        label: "Blog",
+        routes: { exact: [], prefixes: ["/blog/"] },
+      },
+    ],
+    allowedEvents: [
+      {
+        key: "form_start",
+        label: "Inicio de formulario",
+        category: "commercial",
+      },
+    ],
+    allowedContextKeys: ["market"],
+    excludedDestinations: ["https://portal.example.com"],
+  };
+  const site = normalizeSiteManifest({
+    key: "profiled-site",
+    name: "Profiled Site",
+    domain: "profiled.example.com",
+    analytics: { source: "personal", profile: analyticsProfile },
+  });
+  assert.deepEqual(site.analytics.profile, analyticsProfile);
+
+  const [updated] = upsertSiteManifest([site], {
+    key: "profiled-site",
+    name: "Updated Site",
+    domain: "profiled.example.com",
+  });
+  assert.deepEqual(updated.analytics.profile, analyticsProfile);
+});
+
+test("analytics profiles remain optional and invalid profiles fail normalization", () => {
+  const site = normalizeSiteManifest({
+    key: "plain-site",
+    name: "Plain Site",
+    domain: "plain.example.com",
+  });
+  assert.equal("profile" in site.analytics, false);
+  assert.throws(
+    () =>
+      normalizeSiteManifest({
+        key: "invalid-site",
+        name: "Invalid Site",
+        domain: "invalid.example.com",
+        analytics: {
+          profile: {
+            schemaVersion: 1,
+            languages: [{ key: "ES!", label: "Invalid", routes: {} }],
+          },
+        },
+      }),
+    /key/i,
+  );
+});
+
 test("WF-Blogger registers the static and VPS variants with safe public branding paths", () => {
   const staticSite = normalizeSiteManifest({
     key: "static-site",

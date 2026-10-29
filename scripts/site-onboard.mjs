@@ -7,6 +7,7 @@ import {
   createBloggerConfig,
   renderBloggerRuntimeConfig,
 } from "../src/blogger/config.js";
+import { normalizeAnalyticsProfile } from "../src/analytics/profile.js";
 import {
   normalizeSiteManifest,
   upsertSiteManifest,
@@ -76,6 +77,13 @@ export async function onboardSite(args) {
   }
   const siteRoot = path.resolve(args.root);
   const panelRoot = path.resolve(args["panel-root"]);
+  const analyticsProfile = args["analytics-profile"]
+    ? normalizeAnalyticsProfile(
+        JSON.parse(
+          await readFile(path.resolve(args["analytics-profile"]), "utf8"),
+        ),
+      )
+    : null;
   const siteInput = {
     key: args.key,
     name: args.name,
@@ -98,6 +106,7 @@ export async function onboardSite(args) {
         ? { legacyLabel: args["analytics-legacy-label"] }
         : {}),
       ...(args["legacy-dashboard"] ? { legacyDashboard: true } : {}),
+      ...(analyticsProfile ? { profile: analyticsProfile } : {}),
     },
     blogger: {
       enabled: Boolean(args.blogger),
@@ -142,10 +151,23 @@ export async function onboardSite(args) {
 
   const installLegacyEditor = site.blogger.enabled && !site.blogger.variant;
   if (installLegacyEditor) await installBlogger(siteRoot, site, args);
+  if (analyticsProfile) {
+    await cp(
+      path.join(packageRoot, "src", "analytics", "umami-browser.js"),
+      path.join(siteRoot, "umami-analytics-core.js"),
+      { force: true },
+    );
+    await writeFile(
+      path.join(siteRoot, "analytics-profile.json"),
+      `${JSON.stringify(analyticsProfile, null, 2)}\n`,
+      "utf8",
+    );
+  }
   return {
     manifestPath,
     registryPath,
     bloggerInstalled: installLegacyEditor,
+    analyticsInstalled: Boolean(analyticsProfile),
   };
 }
 
