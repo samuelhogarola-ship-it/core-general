@@ -9,6 +9,7 @@
   },
   "exports": {
     ".": "./src/index.js",
+    "./analytics/profile": "./src/analytics/profile.js",
     "./blogger/config": "./src/blogger/config.js",
     "./blogger/content-store": "./src/blogger/content-store.js",
     "./content/blog": "./src/content/blog.js",
